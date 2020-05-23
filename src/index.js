@@ -1,4 +1,4 @@
-import app from App;
+import app from './App';
 import initModel from './Model';
 import update from './Update';
 import view from './View';
