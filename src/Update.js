@@ -37,6 +37,9 @@ function update(model, action) {
             return {...model, name};
         case MSGS.ADD_CITY:
             const {cities, next_id} = model;
+            if(!model.name) {
+                return model;
+            }
             const newCity = {
                 id: next_id,
                 name: model.name,

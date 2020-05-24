@@ -9,8 +9,8 @@ const {pre, div, h1, h2, input, button, label, i} = hh(h);
 
 function displayCell(label, value) {
     return div([
-        h2({className: 'f5 ma2 mt3'}, label),
-        div({className: 'f5 ma2'}, value)
+        h2({className: 'f6 ma2 mt3'}, label),
+        div({className: 'f4 ma2'}, value)
     ]);
 }
 
@@ -54,11 +54,13 @@ function displayForm(dispatch, model) {
         input({
             className: 'pv1 ph2',
             id: 'city',
-            onchange: e => dispatch(inputCityMsg(e.target.value))
+            value: model.name,
+            oninput: e => dispatch(inputCityMsg(e.target.value)),
+            onchange: e => dispatch(addCityMsg),
         }),
         button({
             className: 'pv1 ph2 bg-green white ba b--dark-green pointer grow',
-            type: 'button',
+            type: 'submit',
             onclick: e => dispatch(addCityMsg)
         }, 'Add')
     ]);
