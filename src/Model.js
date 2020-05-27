@@ -1,7 +1,8 @@
 const initModel = {
     name: '',
     next_id: 0,
-    cities: []
+    cities: [],
+    error: {}
 }
 
 export default initModel;

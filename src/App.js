@@ -7,8 +7,8 @@ function httpEffects(dispatch, command) {
     if(command === null) {
         return;
     }
-    const {request, successMsg} = command;
-    axios(request).then(response => dispatch(successMsg(response))).catch(error => console.log(error));
+    const {request, successMsg, failureMsg} = command;
+    axios(request).then(response => dispatch(successMsg(response))).catch(error => dispatch(failureMsg(error)));
 }
 
 function app(initModel, update, view, node){

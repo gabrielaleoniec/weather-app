@@ -64,6 +64,17 @@ function displayForm(dispatch, model) {
     ]);
 }
 
+function displayError(model) {
+    const {error} = model;
+    if(!R.isEmpty(error)) {
+        return div({className: 'pa2 mv3 bg-red white'}, [
+            div(R.pathOr('', ['msg'], error)),
+            div(R.pathOr('', ['errorResponse', 'message'], error))
+        ]);
+    }
+    return null;
+}
+
 function view(dispatch, model) {
     return div({
             className: 'avenir w-50 mw6 center'
@@ -71,8 +82,8 @@ function view(dispatch, model) {
         [
             h1({className: 'bb'}, 'Weather APP'),
             displayForm(dispatch, model),
+            displayError(model),
             displayList(dispatch, model),
-            pre(JSON.stringify(model, null, 2))
         ]
     );
 }
