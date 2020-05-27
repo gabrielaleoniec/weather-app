@@ -4,6 +4,7 @@ const MSGS = {
     'ADD_CITY': 'ADD_CITY',
     'INPUT_CITY_NAME': 'INPUT_CITY_NAME',
     'DELETE_CITY': 'DELETE_CITY',
+    'DELETE_ERROR': 'DELETE_ERROR',
     'HTTP_SUCCESS': 'HTTP_SUCCESS',
     'HTTP_FAILURE' : 'HTTP_FAILURE'
 }
@@ -25,9 +26,16 @@ export function inputCityMsg(name) {
     }
 }
 
-export function deleteCityMsg(id) {
+export function deleteCityMsg(idDelete) {
     return {
         type: MSGS.DELETE_CITY,
+        idDelete
+    }
+}
+
+export function deleteErrorMsg(id) {
+    return {
+        type: MSGS.DELETE_ERROR,
         id
     }
 }
@@ -51,6 +59,11 @@ function deleteCity(model, id) {
     return {...model, cities};
 }
 
+function deleteError(model, id) {
+    const errors = R.reject(c => c.id === id, model.errors);
+    return {...model, errors};
+}
+
 function updateTemps(model, id, response) {
     const {cities} = model;
     const {temp, temp_min, temp_max} = R.pathOr({}, ['data', 'main'], response);
@@ -71,13 +84,14 @@ function updateTemps(model, id, response) {
 }
 
 function handleError(model, id, errorResponse) {
+    const {errors} = model;
     const name = R.pathOr('', ['cities', id, 'name'], model);
-    console.log('error:', errorResponse, name);
     const error =  {
+        id,
         msg: `Temperature could not be retrieved for the city: ${name}`,
         errorResponse
     };
-    return {...model, error}
+    return {...model, errors: [...errors, error]}
 }
 
 function addCity(model){
@@ -114,8 +128,12 @@ function update(model, action) {
         case MSGS.ADD_CITY:
             return addCity(model);
         case MSGS.DELETE_CITY:
+            const {idDelete} = action;
+            const updatedModel = deleteError(model, idDelete);
+            return deleteCity(updatedModel, idDelete);
+        case MSGS.DELETE_ERROR:
             const {id} = action;
-            return deleteCity(model, id);
+            return deleteError(model, id);
         case MSGS.HTTP_SUCCESS:
             const {idUpdate, response} = action;
             return updateTemps(model, idUpdate, response);

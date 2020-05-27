@@ -3,7 +3,7 @@ import {h} from 'virtual-dom';
 
 import * as R from 'ramda';
 
-import {inputCityMsg, addCityMsg, deleteCityMsg, httpSuccessMsg} from './Update';
+import {inputCityMsg, addCityMsg, deleteCityMsg, deleteErrorMsg} from './Update';
 
 const {pre, div, h1, h2, input, button, label, i} = hh(h);
 
@@ -64,14 +64,32 @@ function displayForm(dispatch, model) {
     ]);
 }
 
-function displayError(model) {
-    const {error} = model;
-    if(!R.isEmpty(error)) {
-        return div({className: 'pa2 mv3 bg-red white'}, [
-            div(R.pathOr('', ['msg'], error)),
-            div(R.pathOr('', ['errorResponse', 'message'], error))
+function displayErrors(dispatch, model) {
+    const {errors} = model;
+
+    function displayError(error) {
+        if(!R.isEmpty(error)) {
+            return div(
+                {className: 'pa2 mv3 pr3 bg-red white relative'},
+                [
+                    div(R.pathOr('', ['msg'], error)),
+                    div(R.pathOr('', ['errorResponse', 'message'], error)),
+                    i({
+                        className: 'fa fa-trash pa2 pointer absolute top-0 right-0',
+                        onclick: e => dispatch(deleteErrorMsg(error.id))
+                    })
+                ]
+            );
+        }
+    }
+
+    if(errors.length) {
+        return div([
+            errors.map(error => displayError(error))
         ]);
     }
+
+
     return null;
 }
 
@@ -82,8 +100,9 @@ function view(dispatch, model) {
         [
             h1({className: 'bb'}, 'Weather APP'),
             displayForm(dispatch, model),
-            displayError(model),
+            displayErrors(dispatch, model),
             displayList(dispatch, model),
+            pre(JSON.stringify(model, null, 2))
         ]
     );
 }
