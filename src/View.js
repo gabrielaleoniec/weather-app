@@ -3,7 +3,7 @@ import {h} from 'virtual-dom';
 
 import * as R from 'ramda';
 
-import {inputCityMsg, addCityMsg, deleteCityMsg} from './Update';
+import {inputCityMsg, addCityMsg, deleteCityMsg, httpSuccessMsg} from './Update';
 
 const {pre, div, h1, h2, input, button, label, i} = hh(h);
 
@@ -15,7 +15,6 @@ function displayCell(label, value) {
 }
 
 function displayCity(dispatch, city) {
-    console.log('City:', city);
     return div({
         className: 'flex bg-light-blue mv3'
     }, [
@@ -39,7 +38,6 @@ function displayCity(dispatch, city) {
 }
 
 function displayList(dispatch, model) {
-    console.log('Model inside displayList:', model);
     return R.map(city => displayCity(dispatch, city), model.cities);
 }
 

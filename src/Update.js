@@ -10,7 +10,7 @@ const MSGS = {
 const API_KEY = '9879a5db906e2899bc512227960719bc';
 
 function weatherURL(city) {
-    return `api.openweathermap.org/data/2.5/weather?q=${encodeURI(city)}&appid=${API_KEY}`;
+    return `https://api.openweathermap.org/data/2.5/weather?q=${encodeURI(city)}&units=metric&appid=${API_KEY}`;
 }
 
 export const addCityMsg = {
@@ -31,13 +31,12 @@ export function deleteCityMsg(id) {
     }
 }
 
-export function httpSuccessMsg(id, response) {
-    return {
+const httpSuccessMsg = R.curry((idUpdate, response) => ({
         type: MSGS.HTTP_SUCCESS,
-        id,
+        idUpdate,
         response
     }
-}
+))
 
 function deleteCity(model, id) {
     const cities = R.reject(c => c.id === id, model.cities);
@@ -46,14 +45,14 @@ function deleteCity(model, id) {
 
 function updateTemps(model, id, response) {
     const {cities} = model;
-    const {temp, temp_low, temp_max} = R.pathOr({}, ['data', 'main'], response);
+    const {temp, temp_min, temp_max} = R.pathOr({}, ['data', 'main'], response);
 
     const updatedCities = R.map(city => {
         if(city.id === id){
             return {
                 ...city,
                 temp: Math.round(temp),
-                low: Math.round(temp_low),
+                low: Math.round(temp_min),
                 high: Math.round(temp_max),
             }
         }
@@ -63,30 +62,42 @@ function updateTemps(model, id, response) {
     return {...model, cities: updatedCities}
 }
 
+function addCity(model){
+    const {cities, next_id, name} = model;
+    if(!model.name) {
+        return model;
+    }
+    const newCity = {
+        id: next_id,
+        name,
+        temp: '?',
+        low: '?',
+        high: '?'
+    }
+    return [{
+            name: '',
+            next_id: next_id+1,
+            cities: [...cities, newCity]
+        },
+        {
+            request: {url: weatherURL(name)},
+            successMsg: httpSuccessMsg(next_id)
+        }
+    ];
+}
+
 function update(model, action) {
     switch (action.type) {
         case MSGS.INPUT_CITY_NAME:
             const {name} = action;
             return {...model, name};
         case MSGS.ADD_CITY:
-            const {cities, next_id} = model;
-            if(!model.name) {
-                return model;
-            }
-            const newCity = {
-                id: next_id,
-                name: model.name,
-                temp: '?',
-                low: '?',
-                high: '?'
-            }
-            return {name: '', next_id: next_id+1, cities: [...cities, newCity]};
+            return addCity(model);
         case MSGS.DELETE_CITY:
             const {id} = action;
             return deleteCity(model, id);
         case MSGS.HTTP_SUCCESS:
             const {idUpdate, response} = action;
-            console.log(response);
             return updateTemps(model, idUpdate, response);
     }
 }

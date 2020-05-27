@@ -1,5 +1,15 @@
 import {patch, diff} from 'virtual-dom';
 import createElement  from 'virtual-dom/create-element';
+import axios from 'axios';
+import * as R from 'ramda';
+
+function httpEffects(dispatch, command) {
+    if(command === null) {
+        return;
+    }
+    const {request, successMsg} = command;
+    axios(request).then(response => dispatch(successMsg(response))).catch(error => console.log(error));
+}
 
 function app(initModel, update, view, node){
     let model = initModel;
@@ -8,7 +18,11 @@ function app(initModel, update, view, node){
     node.appendChild(rootNode);
 
     function dispatch(action) {
-        model = update(model, action);
+        const updates = update(model, action);
+        const isArray = R.type(updates) === 'Array';
+        model = isArray ? updates[0] : updates;
+        const command = isArray ? updates[1] : null;
+        httpEffects(dispatch, command);
         const updatedView = view(dispatch, model);
         const patches = diff(currentView, updatedView);
         rootNode = patch(rootNode, patches);
